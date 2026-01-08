@@ -21,7 +21,20 @@ export const BUSINESS_INFO = {
   description: "Reliable construction and renovation company based in Jamaica Queens. Quality workmanship for residential and commercial projects.",
   attributes: ["Asian owned", "LGBTQ+ friendly"],
   ctaPrimary: "Call for a Free Estimate",
-  ctaSecondary: "Request a Quote Online"
+  ctaSecondary: "Request a Quote Online",
+
+  // Cal.com Integration (get event type ID from Cal.com dashboard)
+  calEventTypeId: "1234567", // TODO: Replace with your actual Cal.com event type ID
+
+  // Social Proof Links
+  googleReviews: "https://g.page/r/YOUR_GOOGLE_ID/review", // TODO: Add your Google Business review link
+  facebook: "https://facebook.com/malamconstruction",
+  instagram: "https://instagram.com/malamconstruction",
+  yelp: "https://yelp.com/biz/m-alam-general-construction",
+
+  // Review Stats
+  reviewCount: 50,
+  averageRating: 4.9
 };
 
 export const NAV_LINKS: NavLink[] = [
