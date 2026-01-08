@@ -23,8 +23,8 @@ export const BUSINESS_INFO = {
   ctaPrimary: "Call for a Free Estimate",
   ctaSecondary: "Request a Quote Online",
 
-  // Cal.com Integration (get event type ID from Cal.com dashboard)
-  calEventTypeId: "1234567", // TODO: Replace with your actual Cal.com event type ID
+  // Cal.com Integration
+  calEventTypeId: "4012725", // Your Cal.com event type ID
 
   // Social Proof Links
   googleReviews: "https://g.page/r/YOUR_GOOGLE_ID/review", // TODO: Add your Google Business review link
