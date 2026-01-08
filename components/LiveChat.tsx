@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, User, Mail, Phone, MapPin, ChevronDown, Loader2, Clock, AlertTriangle, Calculator, HelpCircle, Globe } from 'lucide-react';
+import { MessageCircle, X, Send, User, Mail, Phone, MapPin, ChevronDown, Loader2, Clock, AlertTriangle, Calculator, HelpCircle, Globe, Camera, PhoneCall } from 'lucide-react';
 import { BUSINESS_INFO } from '../constants';
 
 type Language = 'en' | 'es';
@@ -90,6 +90,11 @@ const LiveChat: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isOnline, setIsOnline] = useState(true);
     const [hasInteracted, setHasInteracted] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+    const [liveCostLow, setLiveCostLow] = useState(0);
+    const [liveCostHigh, setLiveCostHigh] = useState(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const t = TRANSLATIONS[language];
@@ -113,6 +118,48 @@ const LiveChat: React.FC = () => {
 
     const [messages, setMessages] = useState<ChatMessage[]>([]);
 
+    // 3. SESSION RECOVERY - Save state to localStorage
+    useEffect(() => {
+        const chatState = {
+            messages,
+            formData,
+            currentPath,
+            estimateData,
+            progress,
+            hasInteracted
+        };
+        localStorage.setItem('chatState', JSON.stringify(chatState));
+    }, [messages, formData, currentPath, estimateData, progress, hasInteracted]);
+
+    // Recover state on mount
+    useEffect(() => {
+        const saved = localStorage.getItem('chatState');
+        if (saved) {
+            try {
+                const { messages: savedMessages, formData: savedForm, currentPath: savedPath, estimateData: savedEstimate, progress: savedProgress } = JSON.parse(saved);
+                if (savedMessages && savedMessages.length > 1) {
+                    // Show recovery option
+                    setTimeout(() => {
+                        const shouldRecover = confirm("Welcome back! Want to continue where you left off?");
+                        if (shouldRecover) {
+                            setMessages(savedMessages);
+                            setFormData(savedForm);
+                            setCurrentPath(savedPath);
+                            setEstimateData(savedEstimate);
+                            setProgress(savedProgress || 0);
+                            setIsOpen(true);
+                            setHasInteracted(true);
+                        } else {
+                            localStorage.removeItem('chatState');
+                        }
+                    }, 500);
+                }
+            } catch (e) {
+                console.error('Failed to recover chat state:', e);
+            }
+        }
+    }, []);
+
     // Check business hours (8AM-5PM Mon-Fri EST)
     useEffect(() => {
         const checkBusinessHours = () => {
@@ -128,6 +175,21 @@ const LiveChat: React.FC = () => {
         const interval = setInterval(checkBusinessHours, 60000);
         return () => clearInterval(interval);
     }, []);
+
+    // 6. EXIT-INTENT TRIGGER - Capture leads about to leave
+    useEffect(() => {
+        const handleMouseLeave = (e: MouseEvent) => {
+            if (e.clientY <= 0 && !hasInteracted && !isOpen) {
+                setShowGreeting(true);
+                setTimeout(() => {
+                    addBotMessageWithTyping("⚡ Wait! Get a free 60-second estimate on your project. No email required! 🎯");
+                }, 300);
+            }
+        };
+
+        document.addEventListener('mouseleave', handleMouseLeave);
+        return () => document.removeEventListener('mouseleave', handleMouseLeave);
+    }, [hasInteracted, isOpen]);
 
     // Show greeting after 15 seconds or 50% scroll
     useEffect(() => {
@@ -155,7 +217,31 @@ const LiveChat: React.FC = () => {
     // Auto-scroll messages
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+    }, [messages, isTyping]);
+
+    // 1. PROGRESS INDICATOR - Update based on path
+    useEffect(() => {
+        const progressMap: Record<ChatPath, number> = {
+            'initial': 0,
+            'estimate': 25,
+            'emergency': 33,
+            'question': 25,
+            'estimate-details': 50,
+            'estimate-contact': 75,
+            'emergency-contact': 66,
+            'question-topic': 50,
+            'complete': 100
+        };
+        setProgress(progressMap[currentPath] || 0);
+    }, [currentPath]);
+
+    // 4. TYPING INDICATORS - Add realistic typing delay
+    const addBotMessageWithTyping = async (text: string, options?: ChatMessage['options']) => {
+        setIsTyping(true);
+        await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 800));
+        setIsTyping(false);
+        addBotMessage(text, options);
+    };
 
     const addBotMessage = (text: string, options?: ChatMessage['options']) => {
         const msg: ChatMessage = {
@@ -178,15 +264,32 @@ const LiveChat: React.FC = () => {
         setMessages(prev => [...prev, msg]);
     };
 
+    // 2. SMART FALLBACK RESPONSES
+    const handleFreeTextInput = (input: string) => {
+        const emergencyKeywords = ['urgent', 'emergency', 'leak', 'collapse', 'broken', 'violation', 'dob'];
+        const estimateKeywords = ['cost', 'price', 'quote', 'estimate', 'how much'];
+
+        if (emergencyKeywords.some(word => input.toLowerCase().includes(word))) {
+            handleOptionSelect('emergency');
+        } else if (estimateKeywords.some(word => input.toLowerCase().includes(word))) {
+            handleOptionSelect('estimate');
+        } else {
+            addBotMessageWithTyping("I'm not sure I understand. Let me connect you with a human. In the meantime, which of these can I help with?", [
+                { label: t.estimateBtn, value: 'estimate', icon: Calculator },
+                { label: t.emergencyBtn, value: 'emergency', icon: AlertTriangle, urgent: true },
+                { label: "Talk to a human now", value: 'human', icon: PhoneCall },
+            ]);
+        }
+    };
+
     const handleOpen = () => {
         setIsOpen(true);
         setShowGreeting(false);
         setHasInteracted(true);
 
         if (messages.length === 0) {
-            // Initial greeting with options
             setTimeout(() => {
-                addBotMessage(t.greeting, [
+                addBotMessageWithTyping(t.greeting, [
                     { label: t.estimateBtn, value: 'estimate', icon: Calculator },
                     { label: t.emergencyBtn, value: 'emergency', icon: AlertTriangle, urgent: true },
                     { label: t.questionBtn, value: 'question', icon: HelpCircle },
@@ -207,7 +310,7 @@ const LiveChat: React.FC = () => {
 
         setTimeout(() => {
             const newT = TRANSLATIONS[newLang];
-            addBotMessage(newT.greeting, [
+            addBotMessageWithTyping(newT.greeting, [
                 { label: newT.estimateBtn, value: 'estimate', icon: Calculator },
                 { label: newT.emergencyBtn, value: 'emergency', icon: AlertTriangle, urgent: true },
                 { label: newT.questionBtn, value: 'question', icon: HelpCircle },
@@ -215,23 +318,34 @@ const LiveChat: React.FC = () => {
         }, 300);
     };
 
+    // 8. SKIP TO HUMAN
+    const skipToHuman = () => {
+        addBotMessageWithTyping(`Connecting you now! Call ${BUSINESS_INFO.phone} or I can have someone call you back in under 5 minutes.`);
+        setCurrentPath('emergency-contact');
+    };
+
     const handleOptionSelect = (value: string) => {
+        if (value === 'human') {
+            skipToHuman();
+            return;
+        }
+
         if (currentPath === 'initial') {
             if (value === 'estimate') {
                 addUserMessage(t.estimateBtn);
                 setCurrentPath('estimate');
                 setTimeout(() => {
-                    addBotMessage(t.estimateQ1, PROJECT_TYPES.map(p => ({ label: p.label, value: p.value })));
+                    addBotMessageWithTyping(t.estimateQ1, PROJECT_TYPES.map(p => ({ label: p.label, value: p.value })));
                 }, 500);
             } else if (value === 'emergency') {
                 addUserMessage(t.emergencyBtn);
                 setCurrentPath('emergency');
                 setTimeout(() => {
-                    addBotMessage(t.emergencyAlert);
+                    addBotMessageWithTyping(t.emergencyAlert);
                     setTimeout(() => {
-                        addBotMessage(t.emergencyInfo);
+                        addBotMessageWithTyping(t.emergencyInfo);
                         setTimeout(() => {
-                            addBotMessage(`${t.emergencyWarning} ${BUSINESS_INFO.phone} ${t.emergencyWarning2}`);
+                            addBotMessageWithTyping(`${t.emergencyWarning} ${BUSINESS_INFO.phone} ${t.emergencyWarning2}`);
                             setCurrentPath('emergency-contact');
                         }, 1000);
                     }, 1000);
@@ -240,7 +354,7 @@ const LiveChat: React.FC = () => {
                 addUserMessage(t.questionBtn);
                 setCurrentPath('question');
                 setTimeout(() => {
-                    addBotMessage(t.questionPrompt, QUESTION_TOPICS.map(q => ({ label: q.label, value: q.value })));
+                    addBotMessageWithTyping(t.questionPrompt, QUESTION_TOPICS.map(q => ({ label: q.label, value: q.value })));
                 }, 500);
             }
         } else if (currentPath === 'estimate') {
@@ -250,8 +364,15 @@ const LiveChat: React.FC = () => {
                 setFormData(prev => ({ ...prev, projectType: project.label }));
                 setEstimateData(prev => ({ ...prev, projectType: value }));
                 setCurrentPath('estimate-details');
+
+                // Set initial range values
+                const midSqft = Math.floor((project.sqftRange[0] + project.sqftRange[1]) / 2);
+                setFormData(prev => ({ ...prev, sqft: midSqft.toString() }));
+                setLiveCostLow(midSqft * project.pricePerSqft[0]);
+                setLiveCostHigh(midSqft * project.pricePerSqft[1]);
+
                 setTimeout(() => {
-                    addBotMessage(t.estimateQ2);
+                    addBotMessageWithTyping(t.estimateQ2);
                 }, 500);
             }
         } else if (currentPath === 'question') {
@@ -266,9 +387,9 @@ const LiveChat: React.FC = () => {
                         case 'timeline': answer = t.timelineAnswer; break;
                         case 'safety': answer = t.safetyAnswer; break;
                     }
-                    addBotMessage(answer);
+                    addBotMessageWithTyping(answer);
                     setTimeout(() => {
-                        addBotMessage("Is there anything else I can help you with?", [
+                        addBotMessageWithTyping("Is there anything else I can help you with?", [
                             { label: t.estimateBtn, value: 'estimate', icon: Calculator },
                             { label: "No, thank you!", value: 'done' },
                         ]);
@@ -293,7 +414,7 @@ const LiveChat: React.FC = () => {
             setEstimateData(prev => ({ ...prev, sqft, lowEstimate: low, highEstimate: high }));
 
             setTimeout(() => {
-                addBotMessage(`${t.estimateResult} $${low.toLocaleString()} to $${high.toLocaleString()}. ${t.estimateFollow}`);
+                addBotMessageWithTyping(`${t.estimateResult} $${low.toLocaleString()} to $${high.toLocaleString()}. ${t.estimateFollow}`);
                 setCurrentPath('estimate-contact');
             }, 800);
         }
@@ -305,14 +426,42 @@ const LiveChat: React.FC = () => {
 
         setTimeout(() => {
             setIsSubmitting(false);
-            addBotMessage(`${t.thankYou} ${BUSINESS_INFO.phone}`);
+            addBotMessageWithTyping(`${t.thankYou} ${BUSINESS_INFO.phone}`);
             setCurrentPath('complete');
+            // Clear localStorage after successful submission
+            localStorage.removeItem('chatState');
         }, 1500);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    // 7. REAL-TIME COST CALCULATOR
+    const handleSqftChange = (value: string) => {
+        const sqft = parseInt(value) || 0;
+        setFormData(prev => ({ ...prev, sqft: value }));
+
+        const project = PROJECT_TYPES.find(p => p.value === estimateData.projectType);
+        if (project && sqft > 0) {
+            setLiveCostLow(sqft * project.pricePerSqft[0]);
+            setLiveCostHigh(sqft * project.pricePerSqft[1]);
+        }
+    };
+
+    // 5. IMAGE UPLOAD HANDLER
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files) return;
+
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setUploadedImages(prev => [...prev, reader.result as string]);
+            };
+            reader.readAsDataURL(file);
+        });
     };
 
     return (
@@ -345,8 +494,8 @@ const LiveChat: React.FC = () => {
             <button
                 onClick={isOpen ? handleClose : handleOpen}
                 className={`fixed bottom-[60px] right-5 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${isOpen
-                        ? 'bg-onyx-700 hover:bg-onyx-600'
-                        : 'bg-copper-500 hover:bg-copper-600 hover:scale-110'
+                    ? 'bg-onyx-700 hover:bg-onyx-600'
+                    : 'bg-copper-500 hover:bg-copper-600 hover:scale-110'
                     }`}
                 style={{ boxShadow: isOpen ? 'none' : '0 0 30px rgba(198,122,57,0.4)' }}
             >
@@ -365,6 +514,14 @@ const LiveChat: React.FC = () => {
                 <div className="fixed bottom-[130px] right-5 z-50 w-[380px] max-w-[calc(100vw-40px)] bg-onyx-900 rounded-2xl shadow-2xl border border-onyx-700 overflow-hidden animate-fade-in-up">
                     {/* Header */}
                     <div className="bg-copper-gradient px-5 py-4">
+                        {/* 1. PROGRESS BAR */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-onyx-800">
+                            <div
+                                className="h-full bg-onyx-900 transition-all duration-500"
+                                style={{ width: `${progress}%` }}
+                            />
+                        </div>
+
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-onyx-900/30 flex items-center justify-center">
@@ -378,14 +535,24 @@ const LiveChat: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                            {/* Language Toggle */}
-                            <button
-                                onClick={handleLanguageToggle}
-                                className="flex items-center gap-1.5 bg-onyx-900/20 hover:bg-onyx-900/30 px-3 py-1.5 rounded-full transition-colors"
-                            >
-                                <Globe className="w-4 h-4 text-onyx-900" />
-                                <span className="text-xs font-medium text-onyx-900">{t.langToggle}</span>
-                            </button>
+
+                            {/* Language Toggle & Skip to Human */}
+                            <div className="flex flex-col gap-1">
+                                <button
+                                    onClick={handleLanguageToggle}
+                                    className="flex items-center gap-1.5 bg-onyx-900/20 hover:bg-onyx-900/30 px-2 py-1 rounded-full transition-colors"
+                                >
+                                    <Globe className="w-3 h-3 text-onyx-900" />
+                                    <span className="text-xs font-medium text-onyx-900">{t.langToggle}</span>
+                                </button>
+                                {/* 8. SKIP TO HUMAN BUTTON */}
+                                <button
+                                    onClick={skipToHuman}
+                                    className="text-xs text-onyx-800 hover:text-onyx-900 underline whitespace-nowrap"
+                                >
+                                    Talk to a human →
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -412,8 +579,8 @@ const LiveChat: React.FC = () => {
                                                     key={idx}
                                                     onClick={() => handleOptionSelect(opt.value)}
                                                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${opt.urgent
-                                                            ? 'bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600/30'
-                                                            : 'bg-onyx-700/50 border border-onyx-600 text-ivory hover:border-copper-500/50 hover:bg-onyx-700'
+                                                        ? 'bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600/30'
+                                                        : 'bg-onyx-700/50 border border-onyx-600 text-ivory hover:border-copper-500/50 hover:bg-onyx-700'
                                                         }`}
                                                 >
                                                     {opt.icon && <opt.icon className={`w-4 h-4 ${opt.urgent ? 'text-red-400' : 'text-copper-500'}`} />}
@@ -432,25 +599,57 @@ const LiveChat: React.FC = () => {
                             </div>
                         ))}
 
+                        {/* 4. TYPING INDICATOR */}
+                        {isTyping && (
+                            <div className="flex justify-start">
+                                <div className="bg-onyx-800 rounded-2xl rounded-bl-none px-4 py-3">
+                                    <div className="flex gap-1">
+                                        <span className="w-2 h-2 bg-copper-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                        <span className="w-2 h-2 bg-copper-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                        <span className="w-2 h-2 bg-copper-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Input Forms Based on Path */}
                         {currentPath === 'estimate-details' && (
-                            <form onSubmit={handleSqftSubmit} className="flex gap-2 pl-2">
-                                <input
-                                    type="number"
-                                    name="sqft"
-                                    value={formData.sqft}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter square feet..."
-                                    className="flex-1 bg-onyx-800 border border-onyx-700 rounded-xl px-4 py-3 text-ivory text-sm placeholder-onyx-500 focus:border-copper-500 outline-none"
-                                    required
-                                />
-                                <button
-                                    type="submit"
-                                    className="w-12 h-12 bg-copper-500 hover:bg-copper-600 rounded-xl flex items-center justify-center transition-colors"
-                                >
-                                    <Send className="w-5 h-5 text-onyx-900" />
-                                </button>
-                            </form>
+                            <div className="space-y-4 pl-2">
+                                {/* 7. REAL-TIME COST CALCULATOR */}
+                                <div className="bg-onyx-800/50 rounded-xl p-4 border border-onyx-700">
+                                    <div className="text-center mb-4">
+                                        <div className="text-3xl font-bold text-copper-500">
+                                            ${liveCostLow.toLocaleString()} - ${liveCostHigh.toLocaleString()}
+                                        </div>
+                                        <div className="text-sm text-warm-gray mt-1">{formData.sqft || 0} sq ft</div>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min={PROJECT_TYPES.find(p => p.value === estimateData.projectType)?.sqftRange[0] || 50}
+                                        max={PROJECT_TYPES.find(p => p.value === estimateData.projectType)?.sqftRange[1] || 1000}
+                                        value={formData.sqft || 0}
+                                        onChange={(e) => handleSqftChange(e.target.value)}
+                                        className="w-full h-2 bg-onyx-700 rounded-lg appearance-none cursor-pointer slider"
+                                    />
+                                </div>
+                                <form onSubmit={handleSqftSubmit} className="flex gap-2">
+                                    <input
+                                        type="number"
+                                        name="sqft"
+                                        value={formData.sqft}
+                                        onChange={(e) => handleSqftChange(e.target.value)}
+                                        placeholder="Enter exact square feet..."
+                                        className="flex-1 bg-onyx-800 border border-onyx-700 rounded-xl px-4 py-3 text-ivory text-sm placeholder-onyx-500 focus:border-copper-500 outline-none"
+                                        required
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="w-12 h-12 bg-copper-500 hover:bg-copper-600 rounded-xl flex items-center justify-center transition-colors"
+                                    >
+                                        <Send className="w-5 h-5 text-onyx-900" />
+                                    </button>
+                                </form>
+                            </div>
                         )}
 
                         {(currentPath === 'estimate-contact' || currentPath === 'emergency-contact') && (
@@ -480,18 +679,39 @@ const LiveChat: React.FC = () => {
                                     />
                                 </div>
                                 {currentPath === 'emergency-contact' && (
-                                    <div className="relative">
-                                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-onyx-500" />
-                                        <input
-                                            type="text"
-                                            name="address"
-                                            value={formData.address}
-                                            onChange={handleInputChange}
-                                            placeholder="Address"
-                                            className="w-full bg-onyx-800 border border-onyx-700 rounded-xl pl-10 pr-4 py-3 text-ivory text-sm placeholder-onyx-500 focus:border-copper-500 outline-none"
-                                            required
-                                        />
-                                    </div>
+                                    <>
+                                        <div className="relative">
+                                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-onyx-500" />
+                                            <input
+                                                type="text"
+                                                name="address"
+                                                value={formData.address}
+                                                onChange={handleInputChange}
+                                                placeholder="Address"
+                                                className="w-full bg-onyx-800 border border-onyx-700 rounded-xl pl-10 pr-4 py-3 text-ivory text-sm placeholder-onyx-500 focus:border-copper-500 outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        {/* 5. IMAGE UPLOAD FOR EMERGENCIES */}
+                                        <div className="relative">
+                                            <label className="flex items-center gap-2 bg-onyx-800 border border-onyx-700 rounded-xl px-4 py-3 cursor-pointer hover:border-copper-500 transition-colors">
+                                                <Camera className="w-4 h-4 text-copper-500" />
+                                                <span className="text-sm text-ivory">Upload photos (optional)</span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    multiple
+                                                    className="hidden"
+                                                    onChange={handleImageUpload}
+                                                />
+                                            </label>
+                                            {uploadedImages.length > 0 && (
+                                                <div className="text-xs text-copper-500 mt-1 pl-1">
+                                                    {uploadedImages.length} image(s) uploaded ✓
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
                                 )}
                                 {currentPath === 'estimate-contact' && (
                                     <div className="relative">
@@ -511,8 +731,8 @@ const LiveChat: React.FC = () => {
                                     type="submit"
                                     disabled={isSubmitting}
                                     className={`w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all ${currentPath === 'emergency-contact'
-                                            ? 'bg-red-600 hover:bg-red-500 text-white'
-                                            : 'bg-copper-500 hover:bg-copper-600 text-onyx-900'
+                                        ? 'bg-red-600 hover:bg-red-500 text-white'
+                                        : 'bg-copper-500 hover:bg-copper-600 text-onyx-900'
                                         }`}
                                 >
                                     {isSubmitting ? (
@@ -549,6 +769,24 @@ const LiveChat: React.FC = () => {
         }
         .animate-fade-in-up {
           animation: fade-in-up 0.3s ease-out;
+        }
+        
+        /* Range slider styling */
+        .slider::-webkit-slider-thumb {
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          background: #C67A39;
+          cursor: pointer;
+          border-radius: 50%;
+        }
+        .slider::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          background: #C67A39;
+          cursor: pointer;
+          border-radius: 50%;
+          border: none;
         }
       `}</style>
         </>
