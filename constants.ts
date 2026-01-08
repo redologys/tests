@@ -144,52 +144,52 @@ export const REVIEWS: Review[] = [
 export const FAQS: FAQItem[] = [
   {
     id: 'f1',
-    question: 'Do you offer free construction estimates in Jamaica, Queens?',
-    answer: 'Yes, M Alam General Construction provides completely free, no-obligation estimates for all construction and renovation projects throughout Jamaica, Queens and the greater NYC metro area. Our licensed estimators will visit your property, assess your project requirements, and provide a detailed written quote within 24-48 hours. Whether you\'re planning a kitchen remodel, bathroom renovation, complete home makeover, or commercial build-out, we offer transparent pricing with no hidden fees. As a locally-owned contractor serving Queens for over 15 years, we pride ourselves on honest estimates and competitive rates. Contact us today at (347) 986-4284 to schedule your free consultation and discover why homeowners and businesses throughout Jamaica trust us for quality construction services.'
+    question: 'Do you offer free estimates?',
+    answer: 'Yes, we provide completely free, no-obligation estimates for all projects. Our team will visit your property, assess the work needed, and provide a detailed written quote within 24-48 hours.'
   },
   {
     id: 'f2',
-    question: 'What areas does your construction company serve in NYC?',
-    answer: 'M Alam General Construction proudly serves Jamaica, Queens as our home base, along with Forest Hills, Flushing, Ozone Park, Queens Village, Richmond Hill, and all surrounding NYC neighborhoods. As a licensed and insured general contractor based in Queens, we have deep knowledge of local building codes, permit requirements, and architectural styles unique to our area. Our service area extends throughout the five boroughs including Brooklyn, Manhattan, and the Bronx for larger commercial construction projects. With over 500 completed projects across Queens and NYC, we understand the unique challenges of urban construction and renovation work. Call us to confirm we service your specific location and learn why we\'re the trusted choice for residential and commercial construction throughout the New York City metro area.'
+    question: 'What areas do you serve?',
+    answer: 'We serve all five NYC boroughs (Manhattan, Brooklyn, Queens, Bronx, Staten Island) plus nearby areas in New Jersey. Our projects range from small repairs in Jamaica to large commercial build-outs across the city.'
   },
   {
     id: 'f3',
-    question: 'Do you handle both residential and commercial construction projects?',
-    answer: 'Absolutely! M Alam General Construction specializes in both residential and commercial construction services across Queens and NYC. For homeowners, we provide complete renovation services including kitchen and bathroom remodeling, home additions, basement finishing, flooring installation, and full-house makeovers. Our commercial construction expertise includes retail build-outs, office renovations, restaurant construction, and small business improvements. As a fully licensed and insured contractor in New York, we have the credentials and experience to manage projects of all sizes—from small repair jobs to major commercial renovations. Our team understands the different requirements, timelines, and regulations for residential versus commercial work, ensuring your project meets all NYC building codes and is completed on schedule and within budget.'
+    question: 'Do you handle both residential and commercial work?',
+    answer: 'Absolutely. We specialize in both—from kitchen remodels and bathroom renovations for homeowners to retail build-outs, office renovations, and restaurant construction for businesses.'
   },
   {
     id: 'f4',
-    question: 'Is M Alam Construction licensed and insured in New York?',
-    answer: 'Yes, M Alam General Construction is fully licensed, bonded, and insured to perform all types of construction work in New York City and throughout Queens. We maintain comprehensive general liability insurance and workers\' compensation coverage to protect both our clients and our team members on every job site. Our contractors are licensed professionals who stay current with all NYC Department of Buildings requirements, building codes, and safety regulations. We also handle all necessary permits and inspections for your project, ensuring full compliance with local regulations. As an established construction company serving Jamaica, Queens for over 15 years, we take pride in operating with complete transparency and accountability. You can request copies of our insurance certificates and licensing documentation at any time for your peace of mind and project records.'
+    question: 'Are you licensed and insured?',
+    answer: 'Yes, we\'re fully licensed, bonded, and insured with comprehensive general liability and workers\' compensation coverage. We maintain all NYC Department of Buildings requirements and stay current with building codes.'
   },
   {
     id: 'f5',
-    question: 'Do you take on small construction jobs and repairs in Queens?',
-    answer: 'Yes! Unlike many larger contractors, M Alam General Construction welcomes both small repair jobs and major renovation projects throughout Queens and NYC. We understand that not every job is a complete remodel—sometimes you just need a skilled contractor for drywall repair, fixing a leaky faucet, replacing flooring in one room, or patching concrete. Our experienced team handles everything from minor home repairs and maintenance to full-scale renovations and new construction. No job is too small for our attention and professional craftsmanship. We believe in building long-term relationships with our clients, and many of our small repair customers later trust us with their major renovation projects. Whether it\'s a quick fix or a multi-month construction project, you\'ll receive the same quality workmanship, fair pricing, and reliable service that has earned us hundreds of five-star reviews across Jamaica, Queens.'
+    question: 'Do you take small jobs?',
+    answer: 'Yes! We welcome projects of all sizes. Whether you need drywall repair, a leaky faucet fixed, or a complete home renovation, we bring the same professional craftsmanship to every job.'
   },
   {
     id: 'f6',
-    question: 'How long does a typical construction or renovation project take?',
-    answer: 'Project timelines vary significantly based on scope, size, and complexity. A standard bathroom remodel typically takes 2-3 weeks, while kitchen renovations average 4-6 weeks from start to finish. Complete home renovations can range from 2-4 months depending on square footage and the extent of work required. Commercial build-outs and larger projects may take 3-6 months or longer. At M Alam General Construction, we provide detailed project schedules during the estimate phase, outlining each milestone from demolition through final inspection. Factors affecting timeline include permit approval (typically 2-4 weeks in NYC), material availability, weather conditions for exterior work, and any unexpected issues discovered during construction. We pride ourselves on meeting deadlines and maintaining open communication throughout your project. Our 15+ years serving Queens means we understand NYC\'s unique permitting processes and can accurately forecast realistic completion dates for your construction project.'
+    question: 'How long do projects typically take?',
+    answer: 'It varies by scope: bathroom remodels average 2-3 weeks, kitchens 4-6 weeks, and full renovations 2-4 months. We provide a detailed timeline during the estimate phase with clear milestones from start to finish.'
   },
   {
     id: 'f7',
-    question: 'What permits are needed for construction work in Queens, NYC?',
-    answer: 'Construction permit requirements in Queens and NYC depend on your project scope. Most major renovations require permits from the NYC Department of Buildings, including structural changes, electrical work, plumbing modifications, and HVAC installations. Kitchen and bathroom remodels typically need plumbing and electrical permits, while simple cosmetic updates like painting or flooring replacement may not require permits. As your licensed general contractor in Queens, M Alam General Construction handles all permit applications, submissions, and inspections on your behalf—this is included in our comprehensive service. We ensure all work complies with current NYC building codes, fire safety regulations, and zoning requirements. Our team stays current with frequently changing NYC construction regulations, saving you time and preventing costly violations. We also coordinate required inspections at key project milestones, ensuring your renovation is fully legal and won\'t cause issues when selling your property in the future.'
+    question: 'Do you handle permits?',
+    answer: 'Yes, permit applications and inspections are included in our service. Most major renovations (structural changes, electrical, plumbing, HVAC) require NYC permits, and we handle the entire process on your behalf.'
   },
   {
     id: 'f8',
-    question: 'Do you provide warranties on your construction work?',
-    answer: 'Yes, M Alam General Construction stands behind our work with comprehensive warranties on all construction and renovation projects. We provide a standard one-year workmanship warranty covering all labor and installation, plus we pass through manufacturer warranties on materials, fixtures, and appliances (typically 5-25 years depending on the product). Our warranty covers any defects in construction, installation errors, or material failures that occur under normal use. For specialized systems like roofing, HVAC, or major appliances, extended manufacturer warranties apply. As a licensed and insured contractor serving Jamaica, Queens for over 15 years, our reputation depends on quality work and customer satisfaction. We\'re still here years after project completion to address any concerns. All warranty terms are clearly outlined in your construction contract, and we maintain detailed records of all work performed. Contact us if you have any post-project issues—our commitment to excellence doesn\'t end when we hand you the keys.'
+    question: 'What warranties do you offer?',
+    answer: 'We provide a one-year workmanship warranty on all labor and installation, plus we pass through manufacturer warranties on materials and fixtures (typically 5-25 years depending on the product).'
   },
   {
     id: 'f9',
-    question: 'What types of construction services do you offer in Queens?',
-    answer: 'M Alam General Construction offers comprehensive residential and commercial construction services throughout Queens and NYC. Our residential services include complete home renovations, kitchen remodeling, bathroom renovations, basement finishing, home additions, flooring installation (hardwood, tile, laminate, vinyl), drywall and painting, interior remodeling, and exterior construction including siding, roofing, and masonry work. For commercial clients, we provide retail build-outs, office renovations, restaurant construction, and small business improvements. We also specialize in concrete and masonry work, including driveways, walkways, patios, and foundation repairs. From design consultation through final inspection, we handle every aspect of your project including permits, material sourcing, demolition, construction, and cleanup. As a full-service general contractor in Jamaica, Queens, we\'re your single point of contact for all construction needs, eliminating the hassle of coordinating multiple subcontractors and ensuring consistent quality throughout your entire project.'
+    question: 'What services do you offer?',
+    answer: 'Our services include kitchen and bathroom remodeling, basement finishing, home additions, flooring, drywall, painting, commercial build-outs, office renovations, and complete home or building renovations.'
   },
   {
     id: 'f10',
-    question: 'How much does a construction or renovation project cost in Queens?',
-    answer: 'Construction costs in Queens and NYC vary widely based on project scope, materials, and finishes selected. As a general guideline, bathroom remodels typically range from $8,000-$25,000, kitchen renovations from $15,000-$50,000+, and complete home renovations from $50,000-$200,000+ depending on square footage. Small repairs and handyman services may cost $200-$2,000, while commercial build-outs can range from $25,000 to several hundred thousand dollars. M Alam General Construction provides transparent, itemized estimates breaking down labor, materials, permits, and other costs so you understand exactly where your investment goes. We work with clients at various budget levels and can suggest value engineering options to maximize quality within your budget. Factors affecting cost include material selection (economy vs. premium finishes), structural changes required, permit fees, and current NYC labor rates. Contact us for a free, detailed estimate specific to your project—we\'ll visit your property and provide accurate pricing with no hidden fees or surprises.'
+    question: 'How much do projects cost?',
+    answer: 'Costs vary based on scope and materials. Typical ranges: bathroom remodels $8,000-$25,000, kitchens $15,000-$50,000+, full renovations $50,000-$200,000+. Contact us at (347) 986-4284 for a detailed estimate specific to your project.'
   }
 ];
